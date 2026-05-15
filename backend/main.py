@@ -16,6 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 from dotenv import load_dotenv
 import git
+from ibm_watsonx_ai.foundation_models import Model
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 # Load environment variables
 load_dotenv()
@@ -39,9 +41,38 @@ app.add_middleware(
 # Configuration
 TEMP_REPO_DIR = os.getenv("TEMP_REPO_DIR", "./temp_repos")
 IBM_BOB_API_KEY = os.getenv("IBM_BOB_API_KEY", "")
+IBM_CLOUD_PROJECT_ID = os.getenv("IBM_CLOUD_PROJECT_ID", "")
+WATSON_URL = os.getenv("WATSON_URL", "https://us-south.ml.cloud.ibm.com")
 
 # Ensure temp directory exists
 Path(TEMP_REPO_DIR).mkdir(parents=True, exist_ok=True)
+
+# Initialize watsonx.ai client
+watsonx_model = None
+if IBM_BOB_API_KEY and IBM_CLOUD_PROJECT_ID:
+    try:
+        watsonx_model = Model(
+            model_id="ibm/granite-3-8b-instruct",
+            params={
+                GenParams.DECODING_METHOD: "greedy",
+                GenParams.MAX_NEW_TOKENS: 1000,
+                GenParams.MIN_NEW_TOKENS: 1,
+                GenParams.TEMPERATURE: 0.7,
+                GenParams.TOP_K: 50,
+                GenParams.TOP_P: 1
+            },
+            credentials={
+                "apikey": IBM_BOB_API_KEY,
+                "url": WATSON_URL
+            },
+            project_id=IBM_CLOUD_PROJECT_ID
+        )
+        print("✅ IBM watsonx.ai client initialized successfully")
+    except Exception as e:
+        print(f"⚠️ Warning: Failed to initialize watsonx.ai client: {str(e)}")
+        watsonx_model = None
+else:
+    print("⚠️ Warning: IBM watsonx.ai credentials not found. Using placeholder responses.")
 
 # In-memory storage for repository paths
 # Key: github_url, Value: local_repo_path
@@ -389,10 +420,10 @@ async def analyze_repository(request: AnalyzeRequest):
 @app.post("/ask", response_model=AskResponse)
 async def ask_question(request: AskRequest):
     """
-    Ask a question about the codebase using IBM Bob's understanding
+    Ask a question about the codebase using IBM watsonx.ai
     
     This endpoint reads actual file contents and builds rich context
-    for Bob to analyze the codebase intelligently.
+    for watsonx.ai to analyze the codebase intelligently.
     """
     if not request.repo_path:
         return AskResponse(
@@ -420,13 +451,33 @@ async def ask_question(request: AskRequest):
         
         referenced_files = referenced_files[:5]  # Limit to top 5
         
-        # Build Bob's response based on context
-        # This is where IBM Bob's AI would analyze the context
-        # For now, we'll create intelligent responses based on the actual codebase
+        # Use watsonx.ai if available
+        if watsonx_model:
+            try:
+                # Build prompt for watsonx.ai
+                prompt = f"""You are an expert software architect analyzing a codebase.
+
+Repository structure and relevant file contents:
+{context}
+
+Developer question: {request.question}
+
+Answer specifically which files to modify, which functions to change, and why. Be concise and practical."""
+
+                # Get response from watsonx.ai
+                response = watsonx_model.generate_text(prompt=prompt)
+                
+                return AskResponse(
+                    answer=response,
+                    timestamp=datetime.now().isoformat(),
+                    referenced_files=referenced_files
+                )
+            except Exception as e:
+                print(f"Error calling watsonx.ai: {str(e)}")
+                # Fall through to placeholder response
         
+        # Fallback response if watsonx.ai is not available
         answer_parts = []
-        
-        # Analyze question type
         question_lower = request.question.lower()
         
         if any(word in question_lower for word in ['what', 'explain', 'describe']):
@@ -461,9 +512,10 @@ async def ask_question(request: AskRequest):
                 answer_parts.append(f"\nRelevant files: {', '.join(referenced_files[:3])}")
             answer_parts.append("\nAsk me more specific questions about what, how, why, or where to get detailed insights.")
         
-        # Add file context if provided
         if request.file_context:
             answer_parts.append(f"\n\n📄 Context: Currently viewing '{request.file_context}'")
+        
+        answer_parts.append("\n\n⚠️ Note: Using placeholder response. Configure IBM watsonx.ai credentials for AI-powered answers.")
         
         response_text = "\n".join(answer_parts)
         
@@ -562,13 +614,37 @@ async def get_file_content(request: FileContentRequest):
 @app.post("/why", response_model=WhyResponse)
 async def explain_code_why(request: WhyRequest):
     """
-    Explain WHY a piece of code was written - business context, security, design patterns
+    Explain WHY a piece of code was written using IBM watsonx.ai
+    Provides business context, security considerations, and design patterns
     """
     try:
-        # Analyze the code snippet for patterns and context
         code = request.code_snippet
         file_path = request.file_path
         
+        # Use watsonx.ai if available
+        if watsonx_model:
+            try:
+                # Build prompt for watsonx.ai
+                prompt = f"""You are a senior software engineer explaining code.
+
+File: {file_path}
+Code snippet:
+{code}
+
+Explain WHY this code was written this way — the business reason, security consideration, or design pattern behind it. Be concise, max 3 sentences."""
+
+                # Get response from watsonx.ai
+                response = watsonx_model.generate_text(prompt=prompt)
+                
+                return WhyResponse(
+                    explanation=response,
+                    timestamp=datetime.now().isoformat()
+                )
+            except Exception as e:
+                print(f"Error calling watsonx.ai: {str(e)}")
+                # Fall through to placeholder response
+        
+        # Fallback response if watsonx.ai is not available
         explanation_parts = []
         explanation_parts.append(f"📝 Analysis of code in '{file_path}':\n")
         
@@ -618,6 +694,8 @@ async def explain_code_why(request: WhyRequest):
         explanation_parts.append("• Readability - makes it easier for team members to understand")
         explanation_parts.append("• Reusability - can be used in multiple contexts")
         explanation_parts.append("• Testability - can be easily tested in isolation")
+        
+        explanation_parts.append("\n\n⚠️ Note: Using placeholder response. Configure IBM watsonx.ai credentials for AI-powered explanations.")
         
         return WhyResponse(
             explanation="\n".join(explanation_parts),
