@@ -159,46 +159,43 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0F1117] text-white overflow-hidden">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Header Bar */}
-      <header className="flex-shrink-0 bg-[#1a1d29] border-b border-[#2a2d3a] px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Github className="w-7 h-7 text-indigo-500" />
-            <div>
-              <h1 className="text-xl font-bold text-white">Onboarding Buddy</h1>
-              <p className="text-xs text-gray-400">AI-Powered Codebase Explorer</p>
-            </div>
-          </div>
-          {repoName && (
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Repository</p>
-              <p className="text-sm font-semibold text-indigo-400">{repoName}</p>
-            </div>
-          )}
+      <header className="app-header">
+        <Github style={{ width: '28px', height: '28px', color: '#58A6FF' }} />
+        <div>
+          <h1>Onboarding Buddy</h1>
+          <p>AI-Powered Codebase Explorer</p>
         </div>
+        {repoName && (
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <p style={{ fontSize: '11px', color: '#8B949E' }}>Repository</p>
+            <p style={{ fontSize: '13px', fontWeight: '600', color: '#58A6FF' }}>{repoName}</p>
+          </div>
+        )}
       </header>
 
       {/* GitHub URL Input Bar */}
-      <div className="flex-shrink-0 bg-[#1a1d29] border-b border-[#2a2d3a] px-6 py-3">
-        <div className="flex gap-3">
+      <div style={{ background: '#161B22', borderBottom: '1px solid #30363D', padding: '12px 20px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
             placeholder="Enter GitHub repository URL (e.g., https://github.com/username/repo)"
-            className="flex-1 px-4 py-2 bg-[#0F1117] border border-[#2a2d3a] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500 text-sm"
+            className="url-input"
             disabled={isAnalyzing}
           />
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+            className="btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             {isAnalyzing ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 style={{ width: '16px', height: '16px' }} className="spinner" />
                 Analyzing...
               </>
             ) : (
@@ -207,44 +204,46 @@ function App() {
           </button>
         </div>
         {error && (
-          <div className="mt-2 px-4 py-2 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-xs">
+          <div style={{ 
+            marginTop: '8px', 
+            padding: '8px 12px', 
+            background: 'rgba(248, 81, 73, 0.1)', 
+            border: '1px solid #F85149', 
+            borderRadius: '6px', 
+            color: '#F85149', 
+            fontSize: '12px' 
+          }}>
             {error}
           </div>
         )}
       </div>
 
       {/* Main 3-Column Layout */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* Left Sidebar - File Tree (280px) */}
-        <div className="w-[280px] flex-shrink-0 bg-[#111827] border-r border-[#2a2d3a] overflow-hidden">
-          <FileTree
-            files={files}
-            selectedFile={selectedFile}
-            onFileSelect={handleFileSelect}
-            mentionedFiles={mentionedFiles}
-          />
-        </div>
+      <div className="app-body">
+        {/* Left Sidebar - File Tree */}
+        <FileTree
+          files={files}
+          selectedFile={selectedFile}
+          onFileSelect={handleFileSelect}
+          mentionedFiles={mentionedFiles}
+        />
 
-        {/* Center Panel - Code Viewer (flex-1) */}
-        <div className="flex-1 overflow-hidden min-w-0">
-          <CodeViewer
-            selectedFile={selectedFile}
-            fileContent={fileContent}
-            isLoading={isLoadingFile}
-            repoPath={repoPath}
-          />
-        </div>
+        {/* Center Panel - Code Viewer */}
+        <CodeViewer
+          selectedFile={selectedFile}
+          fileContent={fileContent}
+          isLoading={isLoadingFile}
+          repoPath={repoPath}
+        />
 
-        {/* Right Sidebar - Chat Panel (350px) */}
-        <div className="w-[350px] flex-shrink-0 bg-[#111827] border-l border-[#2a2d3a] overflow-hidden">
-          <ChatPanel
-            messages={chatMessages}
-            onSendMessage={handleSendMessage}
-            repoPath={repoPath}
-            onFileClick={handleFileSelect}
-            files={files}
-          />
-        </div>
+        {/* Right Sidebar - Chat Panel */}
+        <ChatPanel
+          messages={chatMessages}
+          onSendMessage={handleSendMessage}
+          repoPath={repoPath}
+          onFileClick={handleFileSelect}
+          files={files}
+        />
       </div>
     </div>
   )

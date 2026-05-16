@@ -43,42 +43,79 @@ const ChatMessage = ({ message, onFileClick, files }) => {
   }
   
   return (
-    <div className={`flex gap-3 p-3 ${isUser ? 'bg-[#0F1117]' : 'bg-[#111827]'}`}>
-      <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-indigo-600' : 'bg-[#1F2937] border border-[#2a2d3a]'
-      }`}>
+    <div className={isUser ? 'msg-user' : 'msg-bot'} style={{ 
+      display: 'flex', 
+      gap: '12px', 
+      padding: '12px',
+      background: isUser ? '#0F1117' : '#161B22',
+      borderRadius: 0,
+      maxWidth: '100%',
+      alignSelf: 'stretch'
+    }}>
+      <div style={{ 
+        flexShrink: 0, 
+        width: '28px', 
+        height: '28px', 
+        borderRadius: '50%', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: isUser ? '#1F6FEB' : '#21262D',
+        border: isUser ? 'none' : '1px solid #30363D'
+      }}>
         {isUser ? (
-          <User className="w-4 h-4 text-white" />
+          <User style={{ width: '16px', height: '16px', color: 'white' }} />
         ) : (
-          <Bot className="w-4 h-4 text-indigo-400" />
+          <Bot style={{ width: '16px', height: '16px', color: '#58A6FF' }} />
         )}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-semibold text-gray-400">
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '600', color: '#8B949E' }}>
             {isUser ? 'You' : 'Bob AI'}
           </span>
-          <span className="text-xs text-gray-600">
+          <span style={{ fontSize: '11px', color: '#6E7681' }}>
             {new Date(message.timestamp).toLocaleTimeString()}
           </span>
         </div>
-        <div className="text-sm text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
+        <div style={{ fontSize: '13px', color: '#C9D1D9', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.6' }}>
           {displayedText}
-          {isTyping && <span className="inline-block w-1 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
+          {isTyping && <span style={{ display: 'inline-block', width: '4px', height: '16px', background: '#58A6FF', marginLeft: '4px', animation: 'pulse 1s infinite' }}></span>}
         </div>
         
         {/* File Reference Chips */}
         {!isUser && message.referenced_files && message.referenced_files.length > 0 && !isTyping && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <div className="text-xs text-gray-600 w-full mb-0.5">📎 Referenced files:</div>
+          <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <div style={{ fontSize: '11px', color: '#6E7681', width: '100%', marginBottom: '2px' }}>📎 Referenced files:</div>
             {message.referenced_files.map((filePath, index) => (
               <button
                 key={index}
                 onClick={() => handleFileChipClick(filePath)}
-                className="px-2 py-1 bg-[#1a1d29] hover:bg-indigo-600/20 border border-[#2a2d3a] hover:border-indigo-500 rounded text-xs text-gray-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                style={{ 
+                  padding: '4px 8px', 
+                  background: '#161B22', 
+                  border: '1px solid #30363D', 
+                  borderRadius: '3px', 
+                  fontSize: '11px', 
+                  color: '#8B949E',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(88, 166, 255, 0.2)'
+                  e.currentTarget.style.borderColor = '#58A6FF'
+                  e.currentTarget.style.color = '#58A6FF'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#161B22'
+                  e.currentTarget.style.borderColor = '#30363D'
+                  e.currentTarget.style.color = '#8B949E'
+                }}
                 title={`Click to view ${filePath}`}
               >
-                <FileText className="w-3 h-3" />
+                <FileText style={{ width: '12px', height: '12px' }} />
                 {filePath.split('/').pop()}
               </button>
             ))}
@@ -135,38 +172,38 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#111827]">
+    <div className="chat-panel">
       {/* Chat Header */}
-      <div className="px-4 py-3 border-b border-[#2a2d3a]">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-indigo-400" />
-          <div className="flex-1">
-            <h2 className="text-xs font-semibold text-gray-300">AI Assistant</h2>
-            <p className="text-xs text-gray-600">Powered by IBM Bob</p>
+      <div className="chat-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Bot style={{ width: '20px', height: '20px', color: '#58A6FF' }} />
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: '12px', fontWeight: '600', color: '#C9D1D9' }}>AI Assistant</h2>
+            <p style={{ fontSize: '11px', color: '#6E7681' }}>Powered by IBM Bob</p>
           </div>
-          <div className="flex items-center gap-1 px-2 py-1 bg-[#0F1117] rounded text-xs">
-            <Coins className="w-3 h-3 text-yellow-400" />
-            <span className="text-gray-500">Bobcoins</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#0F1117', borderRadius: '3px', fontSize: '11px' }}>
+            <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
+            <span style={{ color: '#8B949E' }}>Bobcoins</span>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="chat-messages" style={{ padding: 0 }}>
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 p-6 text-center">
-            <Bot className="w-12 h-12 mb-3 opacity-40" />
-            <p className="text-sm font-medium mb-1 text-gray-400">Start a conversation</p>
-            <p className="text-xs text-gray-600">
+          <div className="empty-state" style={{ padding: '24px', textAlign: 'center' }}>
+            <Bot style={{ width: '48px', height: '48px', opacity: 0.4 }} />
+            <p style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px', color: '#8B949E' }}>Start a conversation</p>
+            <p style={{ fontSize: '11px', color: '#6E7681' }}>
               Ask me anything about the codebase
             </p>
-            <div className="mt-6 space-y-2 text-left w-full">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Example questions:</p>
-              <div className="space-y-1">
-                <p className="text-xs text-gray-600">• What does this project do?</p>
-                <p className="text-xs text-gray-600">• How is authentication implemented?</p>
-                <p className="text-xs text-gray-600">• Where is the API defined?</p>
-                <p className="text-xs text-gray-600">• Why was this pattern used?</p>
+            <div style={{ marginTop: '24px', textAlign: 'left', width: '100%' }}>
+              <p style={{ fontSize: '11px', fontWeight: '600', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Example questions:</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <p style={{ fontSize: '11px', color: '#6E7681' }}>• What does this project do?</p>
+                <p style={{ fontSize: '11px', color: '#6E7681' }}>• How is authentication implemented?</p>
+                <p style={{ fontSize: '11px', color: '#6E7681' }}>• Where is the API defined?</p>
+                <p style={{ fontSize: '11px', color: '#6E7681' }}>• Why was this pattern used?</p>
               </div>
             </div>
           </div>
@@ -181,16 +218,31 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
               />
             ))}
             {isSending && (
-              <div className="flex gap-3 p-3 bg-[#111827]">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-[#1F2937] border border-[#2a2d3a]">
-                  <Bot className="w-4 h-4 text-indigo-400" />
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px', 
+                padding: '12px',
+                background: '#161B22'
+              }}>
+                <div style={{ 
+                  flexShrink: 0, 
+                  width: '28px', 
+                  height: '28px', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: '#21262D',
+                  border: '1px solid #30363D'
+                }}>
+                  <Bot style={{ width: '16px', height: '16px', color: '#58A6FF' }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold text-gray-400">Bob AI</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: '#8B949E' }}>Bob AI</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#8B949E' }}>
+                    <Loader2 style={{ width: '16px', height: '16px', color: '#58A6FF' }} className="spinner" />
                     <span>Analyzing codebase...</span>
                   </div>
                 </div>
@@ -202,42 +254,45 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-[#2a2d3a] p-3 bg-[#0d1117]">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask a question about the code..."
-            className="flex-1 px-3 py-2 bg-[#111827] border border-[#2a2d3a] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-600 resize-none text-sm"
-            rows="3"
-            disabled={isSending || !repoPath}
-          />
-          <button
-            type="submit"
-            disabled={!inputValue.trim() || isSending || !repoPath}
-            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-lg transition-colors self-end"
-            title={!repoPath ? "Please analyze a repository first" : "Send message"}
-          >
-            {isSending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
+      <div className="chat-input-row" style={{ background: '#0D1117' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask a question about the code..."
+              className="chat-input"
+              rows="3"
+              disabled={isSending || !repoPath}
+            />
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || isSending || !repoPath}
+              className="btn-send"
+              style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title={!repoPath ? "Please analyze a repository first" : "Send message"}
+            >
+              {isSending ? (
+                <Loader2 style={{ width: '20px', height: '20px' }} className="spinner" />
+              ) : (
+                <Send style={{ width: '20px', height: '20px' }} />
+              )}
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '11px', color: '#6E7681' }}>
+              Press Enter to send, Shift+Enter for new line
+            </p>
+            {inputValue && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6E7681' }}>
+                <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
+                <span>~{estimateCoins(inputValue)} coins</span>
+              </div>
             )}
-          </button>
+          </div>
         </form>
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-xs text-gray-600">
-            Press Enter to send, Shift+Enter for new line
-          </p>
-          {inputValue && (
-            <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Coins className="w-3 h-3 text-yellow-400" />
-              <span>~{estimateCoins(inputValue)} coins</span>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
