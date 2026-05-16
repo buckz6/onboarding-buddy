@@ -4,7 +4,7 @@ import FileTree from './components/FileTree'
 import CodeViewer from './components/CodeViewer'
 import ChatPanel from './components/ChatPanel'
 
-const API_BASE_URL = '/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function App() {
   const [repoUrl, setRepoUrl] = useState('')
@@ -35,7 +35,7 @@ function App() {
     setMentionedFiles([])
 
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
+      const response = await fetch(`${API_BASE}/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ function App() {
     setFileContent(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/file-content`, {
+      const response = await fetch(`${API_BASE}/file-content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ function App() {
     setChatMessages(prev => [...prev, userMessage])
 
     try {
-      const response = await fetch(`${API_BASE_URL}/ask`, {
+      const response = await fetch(`${API_BASE}/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

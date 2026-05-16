@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, FileText, Coins } from 'lucide-react'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 const ChatMessage = ({ message, onFileClick, files }) => {
   const isUser = message.role === 'user'
   const [displayedText, setDisplayedText] = useState('')
