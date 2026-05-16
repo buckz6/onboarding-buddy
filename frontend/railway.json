@@ -3,6 +3,6 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm run build && npx serve dist -p $PORT"
+    "startCommand": "npm run build && npx serve -s dist -l $PORT"
   }
 }

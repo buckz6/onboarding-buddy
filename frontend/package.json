@@ -5,6 +5,7 @@
   "type": "module",
   "description": "AI-powered codebase explorer frontend",
   "scripts": {
+    "start": "npx serve -s dist -l 3000",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
