@@ -159,28 +159,28 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white">
-      {/* Header */}
-      <header className="bg-surface border-b border-surface-light px-6 py-4">
+    <div className="flex flex-col h-screen bg-[#0F1117] text-white overflow-hidden">
+      {/* Header Bar */}
+      <header className="flex-shrink-0 bg-[#1a1d29] border-b border-[#2a2d3a] px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Github className="w-8 h-8 text-primary" />
+            <Github className="w-7 h-7 text-indigo-500" />
             <div>
-              <h1 className="text-2xl font-bold text-white">Onboarding Buddy</h1>
-              <p className="text-sm text-gray-400">AI-Powered Codebase Explorer</p>
+              <h1 className="text-xl font-bold text-white">Onboarding Buddy</h1>
+              <p className="text-xs text-gray-400">AI-Powered Codebase Explorer</p>
             </div>
           </div>
           {repoName && (
             <div className="text-right">
-              <p className="text-sm text-gray-400">Analyzing</p>
-              <p className="text-lg font-semibold text-secondary">{repoName}</p>
+              <p className="text-xs text-gray-400">Repository</p>
+              <p className="text-sm font-semibold text-indigo-400">{repoName}</p>
             </div>
           )}
         </div>
       </header>
 
-      {/* Repository Input */}
-      <div className="bg-surface border-b border-surface-light px-6 py-4">
+      {/* GitHub URL Input Bar */}
+      <div className="flex-shrink-0 bg-[#1a1d29] border-b border-[#2a2d3a] px-6 py-3">
         <div className="flex gap-3">
           <input
             type="text"
@@ -188,13 +188,13 @@ function App() {
             onChange={(e) => setRepoUrl(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
             placeholder="Enter GitHub repository URL (e.g., https://github.com/username/repo)"
-            className="flex-1 px-4 py-2 bg-background border border-surface-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
+            className="flex-1 px-4 py-2 bg-[#0F1117] border border-[#2a2d3a] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500 text-sm"
             disabled={isAnalyzing}
           />
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="px-6 py-2 bg-primary hover:bg-indigo-600 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
           >
             {isAnalyzing ? (
               <>
@@ -207,16 +207,16 @@ function App() {
           </button>
         </div>
         {error && (
-          <div className="mt-3 px-4 py-2 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+          <div className="mt-2 px-4 py-2 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-xs">
             {error}
           </div>
         )}
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* File Tree - Left Sidebar */}
-        <div className="w-80 bg-surface border-r border-surface-light overflow-y-auto">
+      {/* Main 3-Column Layout */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* Left Sidebar - File Tree (280px) */}
+        <div className="w-[280px] flex-shrink-0 bg-[#111827] border-r border-[#2a2d3a] overflow-hidden">
           <FileTree
             files={files}
             selectedFile={selectedFile}
@@ -225,8 +225,8 @@ function App() {
           />
         </div>
 
-        {/* Code Viewer - Center Panel */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Center Panel - Code Viewer (flex-1) */}
+        <div className="flex-1 overflow-hidden min-w-0">
           <CodeViewer
             selectedFile={selectedFile}
             fileContent={fileContent}
@@ -235,8 +235,8 @@ function App() {
           />
         </div>
 
-        {/* Chat Panel - Right Sidebar */}
-        <div className="w-96 bg-surface border-l border-surface-light">
+        {/* Right Sidebar - Chat Panel (350px) */}
+        <div className="w-[350px] flex-shrink-0 bg-[#111827] border-l border-[#2a2d3a] overflow-hidden">
           <ChatPanel
             messages={chatMessages}
             onSendMessage={handleSendMessage}

@@ -73,43 +73,43 @@ const FileTreeItem = ({ file, isSelected, onSelect, level = 0, mentionedFiles = 
       <div
         onClick={handleClick}
         className={`
-          flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-light transition-colors
-          ${isSelected ? 'bg-primary/20 border-l-2 border-primary' : ''}
-          ${isMentioned ? 'bg-secondary/10 border-l-2 border-secondary' : ''}
+          flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[#1a1d29] transition-colors
+          ${isSelected ? 'bg-indigo-600/20 border-l-2 border-indigo-500' : ''}
+          ${isMentioned ? 'bg-indigo-500/10 border-l-2 border-indigo-400' : ''}
         `}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
       >
         {isDirectory && (
-          <span className="text-gray-400 flex-shrink-0">
+          <span className="text-gray-500 flex-shrink-0">
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3.5 h-3.5" />
             ) : (
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             )}
           </span>
         )}
         {isDirectory ? (
-          <Folder className={`w-4 h-4 flex-shrink-0 ${isExpanded ? 'text-primary' : 'text-gray-400'}`} />
+          <Folder className={`w-4 h-4 flex-shrink-0 ${isExpanded ? 'text-indigo-400' : 'text-gray-500'}`} />
         ) : (
-          <span className="text-base flex-shrink-0" title={file.extension ? `.${file.extension}` : 'file'}>
+          <span className="text-sm flex-shrink-0" title={file.extension ? `.${file.extension}` : 'file'}>
             {getFileEmoji(file.extension)}
           </span>
         )}
-        <span className={`text-sm truncate flex-1 ${isMentioned ? 'font-semibold text-secondary' : ''}`}>
+        <span className={`text-sm truncate flex-1 ${isMentioned ? 'font-semibold text-indigo-300' : 'text-gray-300'}`}>
           {file.path.split('/').pop()}
         </span>
         {isDirectory && fileCount > 0 && (
-          <span className="text-xs bg-surface-light px-1.5 py-0.5 rounded text-gray-400 flex-shrink-0">
+          <span className="text-xs bg-[#1a1d29] px-1.5 py-0.5 rounded text-gray-500 flex-shrink-0">
             {fileCount}
           </span>
         )}
         {!isDirectory && file.size && (
-          <span className="text-xs text-gray-500 flex-shrink-0">
+          <span className="text-xs text-gray-600 flex-shrink-0">
             {formatFileSize(file.size)}
           </span>
         )}
         {isMentioned && (
-          <span className="text-xs bg-secondary/20 px-1.5 py-0.5 rounded text-secondary flex-shrink-0" title="Mentioned by Bob">
+          <span className="text-xs bg-indigo-500/20 px-1.5 py-0.5 rounded text-indigo-300 flex-shrink-0" title="Mentioned by Bob">
             ✨
           </span>
         )}
@@ -192,9 +192,9 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
   if (files.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500 p-6 text-center">
-        <Folder className="w-16 h-16 mb-4 opacity-50" />
-        <p className="text-sm">No repository analyzed yet</p>
-        <p className="text-xs mt-2">Enter a GitHub URL above to get started</p>
+        <Folder className="w-12 h-12 mb-3 opacity-40" />
+        <p className="text-sm text-gray-400">No repository analyzed yet</p>
+        <p className="text-xs mt-1 text-gray-600">Enter a GitHub URL above to get started</p>
       </div>
     )
   }
@@ -204,15 +204,15 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
   const mentionedCount = mentionedFiles.length
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="px-4 py-3 border-b border-surface-light">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
-          File Explorer
+    <div className="h-full flex flex-col bg-[#111827]">
+      <div className="px-4 py-3 border-b border-[#2a2d3a]">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Explorer
         </h2>
-        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+        <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
           <span>{totalFiles} files</span>
           {mentionedCount > 0 && (
-            <span className="flex items-center gap-1 text-secondary">
+            <span className="flex items-center gap-1 text-indigo-400">
               <span>✨</span>
               {mentionedCount} mentioned
             </span>
@@ -224,36 +224,36 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
       </div>
       
       {/* Legend */}
-      <div className="px-4 py-3 border-t border-surface-light bg-surface">
-        <p className="text-xs text-gray-500 mb-2">File Types:</p>
-        <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="px-4 py-2.5 border-t border-[#2a2d3a] bg-[#0d1117]">
+        <p className="text-xs text-gray-600 mb-1.5">File Types:</p>
+        <div className="grid grid-cols-3 gap-1.5 text-xs">
           <div className="flex items-center gap-1">
             <span>🐍</span>
-            <span className="text-gray-400">Python</span>
+            <span className="text-gray-500">Python</span>
           </div>
           <div className="flex items-center gap-1">
             <span>⚛️</span>
-            <span className="text-gray-400">React</span>
+            <span className="text-gray-500">React</span>
           </div>
           <div className="flex items-center gap-1">
             <span>📄</span>
-            <span className="text-gray-400">JS</span>
+            <span className="text-gray-500">JS</span>
           </div>
           <div className="flex items-center gap-1">
             <span>🎨</span>
-            <span className="text-gray-400">CSS</span>
+            <span className="text-gray-500">CSS</span>
           </div>
           <div className="flex items-center gap-1">
             <span>📋</span>
-            <span className="text-gray-400">JSON</span>
+            <span className="text-gray-500">JSON</span>
           </div>
           <div className="flex items-center gap-1">
             <span>📝</span>
-            <span className="text-gray-400">Markdown</span>
+            <span className="text-gray-500">MD</span>
           </div>
         </div>
         {mentionedCount > 0 && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-600 mt-1.5">
             ✨ = Mentioned by Bob AI
           </p>
         )}
