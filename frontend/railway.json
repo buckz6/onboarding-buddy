@@ -1,8 +1,5 @@
-{
-  "build": {
-    "builder": "nixpacks"
-  },
-  "deploy": {
-    "startCommand": "npm run build && npx serve -s dist -l $PORT"
-  }
-}
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm install && npm run build && npx serve -s dist -l $PORT"
