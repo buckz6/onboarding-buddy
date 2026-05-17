@@ -477,14 +477,22 @@ async def ask_question(request: AskRequest):
         # Try to use watsonx.ai
         try:
             # Build prompt for watsonx.ai
-            prompt = f"""You are an expert software architect analyzing a codebase.
+            prompt = f"""You are an expert software architect and senior developer analyzing a codebase.
 
-Repository context:
+Repository context (relevant files):
 {context}
 
 Developer question: {request.question}
 
-Answer which files to modify and why. Be specific and concise."""
+Instructions:
+- Be specific and reference actual file names and function names from the context
+- If asking about where to add code, list the exact files and line areas
+- If asking about how something works, trace the complete flow
+- Keep response concise but complete (max 300 words)
+- Format with clear sections if needed
+- Always mention which files are most relevant
+
+Answer:"""
 
             # Get response from watsonx.ai
             response = call_watsonx(prompt)

@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
-import { FileCode, AlertCircle, Loader2, Copy, Check, HelpCircle, X } from 'lucide-react'
+import { FileCode, AlertCircle, Loader2, Copy, Check, HelpCircle, X, Zap } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
+const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath, onSendToChat }) => {
   const [copied, setCopied] = useState(false)
   const [showWhyModal, setShowWhyModal] = useState(false)
   const [whyExplanation, setWhyExplanation] = useState('')
   const [isLoadingWhy, setIsLoadingWhy] = useState(false)
   const [selectedCode, setSelectedCode] = useState('')
+  const [isLoadingFlow, setIsLoadingFlow] = useState(false)
 
   // Reset copied state after 2 seconds
   useEffect(() => {
@@ -61,6 +62,30 @@ const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
       setWhyExplanation('Sorry, I encountered an error analyzing this code. Please try again.')
     } finally {
       setIsLoadingWhy(false)
+    }
+  }
+
+  const handleExplainFlow = async () => {
+    if (!selectedFile || !repoPath || !onSendToChat) return
+
+    setIsLoadingFlow(true)
+
+    const flowPrompt = `Analyze this file and explain the complete data flow:
+1. What triggers or calls this file/function?
+2. What data does it receive as input?
+3. What does it process, transform, or compute?
+4. What external services, databases, or files does it interact with?
+5. What is the final output or side effect?
+Provide a clear step-by-step flow explanation.
+File being analyzed: ${selectedFile.path}`
+
+    try {
+      // Send to chat panel
+      await onSendToChat(flowPrompt)
+    } catch (err) {
+      console.error('Error explaining flow:', err)
+    } finally {
+      setIsLoadingFlow(false)
     }
   }
 
@@ -230,12 +255,35 @@ const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
             <span style={{ fontSize: '11px', color: '#6E7681' }}>{formatFileSize(selectedFile.size)}</span>
           )}
           <button
+            onClick={handleExplainFlow}
+            disabled={isLoadingFlow || !onSendToChat}
+            className="btn-flow"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Explain the complete data flow"
+          >
+            {isLoadingFlow ? (
+              <>
+                <Loader2 style={{ width: '14px', height: '14px' }} className="spinner" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Zap style={{ width: '14px', height: '14px' }} />
+                Explain Flow
+              </>
+            )}
+          </button>
+          <button
             onClick={handleWhyClick}
-            style={{ 
-              padding: '6px 12px', 
-              background: '#1F6FEB', 
-              borderRadius: '6px', 
-              fontSize: '11px', 
+            style={{
+              padding: '6px 12px',
+              background: '#1F6FEB',
+              borderRadius: '6px',
+              fontSize: '11px',
               fontWeight: '500',
               border: 'none',
               color: 'white',
@@ -253,7 +301,7 @@ const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
           </button>
           <button
             onClick={handleCopy}
-            className="btn-secondary"
+            className={copied ? 'btn-secondary btn-copied' : 'btn-secondary'}
             style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
             title="Copy to clipboard"
           >

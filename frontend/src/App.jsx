@@ -218,6 +218,10 @@ function App() {
     }
   }
 
+  const handleClearChat = () => {
+    setChatMessages([])
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Header Bar */}
@@ -234,6 +238,19 @@ function App() {
           </div>
         )}
       </header>
+
+      {/* Repository Stats Bar */}
+      {repoName && !isAnalyzing && (
+        <div className="stats-bar">
+          <span>📁 {repoName}</span>
+          <span>|</span>
+          <span>📄 {files.filter(f => f.type === 'file').length} files</span>
+          <span>|</span>
+          <span>⏱ Analyzed just now</span>
+          <span>|</span>
+          <span>🤖 Powered by IBM Bob</span>
+        </div>
+      )}
 
       {/* Progress Bar */}
       {isAnalyzing && (
@@ -323,118 +340,39 @@ function App() {
 
         {/* Center Panel - Code Viewer or Welcome Screen */}
         {!repoPath && !isAnalyzing ? (
-          <div className="main-panel" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px'
-          }}>
-            <div className="welcome-container" style={{
-              textAlign: 'center',
-              maxWidth: '500px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '24px'
-            }}>
-              {/* Robot Icon */}
-              <div style={{ fontSize: '64px', lineHeight: 1 }}>🤖</div>
+          <div className="welcome-screen">
+            <div className="welcome-icon">🤖</div>
+            
+            <h2 className="welcome-title">Onboarding Buddy</h2>
+            
+            <p className="welcome-subtitle">AI-Powered Codebase Explorer — Powered by IBM Bob</p>
+            
+            <p className="welcome-desc">
+              Understand any codebase in seconds.<br />
+              Ask questions, explore files, and navigate complex projects<br />
+              with the power of IBM Bob's full repository context.
+            </p>
+            
+            <div style={{ marginTop: '8px' }}>
+              <p style={{ fontSize: '13px', color: '#8B949E', marginBottom: '12px' }}>
+                ✨ Try these popular repositories:
+              </p>
               
-              {/* Heading */}
-              <div>
-                <h2 style={{
-                  fontSize: '24px',
-                  fontWeight: '700',
-                  color: '#C9D1D9',
-                  marginBottom: '8px'
-                }}>
-                  Welcome to Onboarding Buddy
-                </h2>
-                <p style={{
-                  fontSize: '13px',
-                  color: '#8B949E',
-                  marginBottom: '4px'
-                }}>
-                  Powered by IBM Bob
-                </p>
-              </div>
-
-              {/* Description */}
-              <div>
-                <p style={{
-                  fontSize: '15px',
-                  color: '#8B949E',
-                  marginBottom: '8px'
-                }}>
-                  Understand any codebase instantly.
-                </p>
-                <p style={{
-                  fontSize: '13px',
-                  color: '#6E7681'
-                }}>
-                  Paste a GitHub URL above to get started.
-                </p>
-              </div>
-
-              {/* Popular Repositories */}
-              <div style={{
-                marginTop: '16px',
-                padding: '20px',
-                background: '#161B22',
-                border: '1px solid #30363D',
-                borderRadius: '8px'
-              }}>
-                <p style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  color: '#8B949E',
-                  marginBottom: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  Try these popular repositories:
-                </p>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}>
-                  {[
-                    { url: 'https://github.com/tiangolo/fastapi', name: 'FastAPI - Modern Python web framework' },
-                    { url: 'https://github.com/expressjs/express', name: 'Express - Node.js web framework' },
-                    { url: 'https://github.com/laravel/laravel', name: 'Laravel - PHP web framework' }
-                  ].map((repo, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleRepoLinkClick(repo.url)}
-                      style={{
-                        padding: '10px 12px',
-                        background: '#0D1117',
-                        border: '1px solid #30363D',
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        color: '#58A6FF',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#161B22'
-                        e.currentTarget.style.borderColor = '#58A6FF'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#0D1117'
-                        e.currentTarget.style.borderColor = '#30363D'
-                      }}
-                    >
-                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>
-                        {repo.url.split('/').slice(-2).join('/')}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#8B949E' }}>
-                        {repo.name}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <div className="repo-cards">
+                {[
+                  { url: 'https://github.com/tiangolo/fastapi', name: 'FastAPI' },
+                  { url: 'https://github.com/expressjs/express', name: 'Express' },
+                  { url: 'https://github.com/laravel/laravel', name: 'Laravel' }
+                ].map((repo, index) => (
+                  <div
+                    key={index}
+                    className="repo-card"
+                    onClick={() => handleRepoLinkClick(repo.url)}
+                  >
+                    <div className="repo-card-name">{repo.name}</div>
+                    <div className="repo-card-url">{repo.url}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -444,6 +382,7 @@ function App() {
             fileContent={fileContent}
             isLoading={isLoadingFile}
             repoPath={repoPath}
+            onSendToChat={handleSendMessage}
           />
         )}
 

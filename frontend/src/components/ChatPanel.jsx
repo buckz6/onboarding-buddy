@@ -300,9 +300,10 @@ const ChatPanel = ({ messages, onSendMessage, onClearChat, repoPath, onFileClick
           {repoPath && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {[
-                "Where do I add a new feature?",
-                "How does authentication work?",
-                "What are the main entry points?"
+                "📁 What does this project do?",
+                "🔐 How is authentication handled?",
+                "➕ Where do I add a new feature?",
+                "🔍 What are the main entry points?"
               ].map((question, index) => (
                 <button
                   key={index}
