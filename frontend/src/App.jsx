@@ -32,18 +32,21 @@ function App() {
   }
 
   const handleAnalyze = async (urlOverride = null) => {
-    const urlToAnalyze = urlOverride || repoUrl
+    // Convert to string and trim to handle any edge cases
+    const url = String(urlOverride || repoUrl || '').trim()
     
-    if (!urlToAnalyze.trim()) {
+    if (!url) {
       setError('Please enter a GitHub repository URL')
       return
     }
 
     // Validate GitHub URL format
-    if (!validateGitHubUrl(urlToAnalyze)) {
+    if (!validateGitHubUrl(url)) {
       setError('Invalid GitHub URL format. Please use: https://github.com/username/repository')
       return
     }
+    
+    const urlToAnalyze = url
 
     setIsAnalyzing(true)
     setError(null)
@@ -292,7 +295,7 @@ function App() {
             type="text"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
+            onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
             placeholder="Enter GitHub repository URL (e.g., https://github.com/username/repo)"
             className="url-input"
             disabled={isAnalyzing}
