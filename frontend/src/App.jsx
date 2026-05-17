@@ -18,10 +18,23 @@ function App() {
   const [fileContent, setFileContent] = useState(null)
   const [isLoadingFile, setIsLoadingFile] = useState(false)
   const [mentionedFiles, setMentionedFiles] = useState([])
+  const [progress, setProgress] = useState(0)
+  const [filesFound, setFilesFound] = useState(0)
+
+  const validateGitHubUrl = (url) => {
+    const githubPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/
+    return githubPattern.test(url.trim())
+  }
 
   const handleAnalyze = async () => {
     if (!repoUrl.trim()) {
       setError('Please enter a GitHub repository URL')
+      return
+    }
+
+    // Validate GitHub URL format
+    if (!validateGitHubUrl(repoUrl)) {
+      setError('Invalid GitHub URL format. Please use: https://github.com/username/repository')
       return
     }
 
@@ -33,6 +46,16 @@ function App() {
     setRepoPath('')
     setFileContent(null)
     setMentionedFiles([])
+    setProgress(0)
+    setFilesFound(0)
+
+    // Simulate progress animation
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev
+        return prev + Math.random() * 15
+      })
+    }, 200)
 
     try {
       const response = await fetch(`${API_BASE}/analyze`, {
@@ -45,27 +68,57 @@ function App() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to analyze repository')
+        let errorMessage = errorData.detail || 'Failed to analyze repository'
+        
+        // Handle specific error cases
+        if (response.status === 404) {
+          errorMessage = '❌ Repository not found. Please check the URL and try again.'
+        } else if (response.status === 403) {
+          errorMessage = '🔒 This repository is private. Please use a public repository or provide authentication.'
+        } else if (response.status === 413 || errorMessage.includes('too large')) {
+          errorMessage = '⚠️ Repository is too large. Please try a smaller repository (< 100MB).'
+        } else if (response.status === 401) {
+          errorMessage = '🔐 Authentication required. This repository may be private.'
+        } else if (errorMessage.includes('rate limit')) {
+          errorMessage = '⏱️ GitHub API rate limit exceeded. Please try again later.'
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
-      setFiles(data.files)
-      setRepoName(data.repository_name)
-      setRepoPath(data.repo_path)
       
-      // Add welcome message to chat
-      setChatMessages([
-        {
-          role: 'assistant',
-          content: `Repository "${data.repository_name}" analyzed successfully! Found ${data.total_files} files. Ask me anything about this codebase.`,
-          timestamp: new Date().toISOString()
-        }
-      ])
+      // Complete progress
+      clearInterval(progressInterval)
+      setProgress(100)
+      setFilesFound(data.total_files)
+      
+      // Wait a bit to show 100% before hiding
+      setTimeout(() => {
+        setFiles(data.files)
+        setRepoName(data.repository_name)
+        setRepoPath(data.repo_path)
+        
+        // Add welcome message to chat
+        setChatMessages([
+          {
+            role: 'assistant',
+            content: `Repository "${data.repository_name}" analyzed successfully! Found ${data.total_files} files. Ask me anything about this codebase.`,
+            timestamp: new Date().toISOString()
+          }
+        ])
+        
+        setIsAnalyzing(false)
+        setProgress(0)
+        setFilesFound(0)
+      }, 500)
     } catch (err) {
+      clearInterval(progressInterval)
       setError(err.message)
       console.error('Error analyzing repository:', err)
-    } finally {
       setIsAnalyzing(false)
+      setProgress(0)
+      setFilesFound(0)
     }
   }
 
@@ -175,6 +228,39 @@ function App() {
         )}
       </header>
 
+      {/* Progress Bar */}
+      {isAnalyzing && (
+        <div style={{
+          background: '#161B22',
+          borderBottom: '1px solid #30363D',
+          padding: '12px 20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', color: '#8B949E' }}>
+              Analyzing repository... Found {filesFound} files
+            </span>
+            <span style={{ fontSize: '12px', color: '#58A6FF', fontWeight: '600' }}>
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div style={{
+            width: '100%',
+            height: '4px',
+            background: '#21262D',
+            borderRadius: '2px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${progress}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #1F6FEB 0%, #58A6FF 100%)',
+              transition: 'width 0.3s ease',
+              borderRadius: '2px'
+            }} />
+          </div>
+        </div>
+      )}
+
       {/* GitHub URL Input Bar */}
       <div style={{ background: '#161B22', borderBottom: '1px solid #30363D', padding: '12px 20px' }}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -240,6 +326,7 @@ function App() {
         <ChatPanel
           messages={chatMessages}
           onSendMessage={handleSendMessage}
+          onClearChat={handleClearChat}
           repoPath={repoPath}
           onFileClick={handleFileSelect}
           files={files}

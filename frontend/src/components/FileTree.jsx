@@ -1,4 +1,4 @@
-import { Folder, ChevronRight, ChevronDown } from 'lucide-react'
+import { Folder, ChevronRight, ChevronDown, Search, X } from 'lucide-react'
 import { useState } from 'react'
 
 const getFileEmoji = (extension) => {
@@ -52,6 +52,8 @@ const getFileEmoji = (extension) => {
 
 const FileTreeItem = ({ file, isSelected, onSelect, level = 0, mentionedFiles = [] }) => {
   const [isExpanded, setIsExpanded] = useState(level === 0)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const isDirectory = file.type === 'directory'
   const isMentioned = mentionedFiles.includes(file.path)
   
@@ -61,6 +63,48 @@ const FileTreeItem = ({ file, isSelected, onSelect, level = 0, mentionedFiles = 
     } else {
       onSelect(file)
     }
+  }
+
+  const handleMouseEnter = (e) => {
+    if (!isDirectory) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      setTooltipPosition({ x: rect.right + 10, y: rect.top })
+      setShowTooltip(true)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+  }
+
+  const getFileType = (ext) => {
+    const typeMap = {
+      py: 'Python',
+      js: 'JavaScript',
+      jsx: 'React JSX',
+      ts: 'TypeScript',
+      tsx: 'React TSX',
+      json: 'JSON',
+      md: 'Markdown',
+      css: 'CSS',
+      scss: 'SCSS',
+      html: 'HTML',
+      xml: 'XML',
+      yml: 'YAML',
+      yaml: 'YAML',
+      toml: 'TOML',
+      txt: 'Text',
+      java: 'Java',
+      cpp: 'C++',
+      c: 'C',
+      go: 'Go',
+      rs: 'Rust',
+      php: 'PHP',
+      rb: 'Ruby',
+      swift: 'Swift',
+      kt: 'Kotlin',
+    }
+    return typeMap[ext?.toLowerCase()] || 'File'
   }
   
   // Count files in directory
@@ -74,8 +118,10 @@ const FileTreeItem = ({ file, isSelected, onSelect, level = 0, mentionedFiles = 
     <div>
       <div
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={itemClass}
-        style={{ paddingLeft: `${level * 16 + 12}px` }}
+        style={{ paddingLeft: `${level * 16 + 12}px`, position: 'relative' }}
       >
         {isDirectory && (
           <span style={{ color: '#8B949E', flexShrink: 0 }}>
@@ -138,6 +184,54 @@ const FileTreeItem = ({ file, isSelected, onSelect, level = 0, mentionedFiles = 
             ✨
           </span>
         )}
+        
+        {/* Tooltip */}
+        {showTooltip && !isDirectory && (
+          <div style={{
+            position: 'fixed',
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            background: '#1C2128',
+            border: '1px solid #30363D',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            fontSize: '11px',
+            color: '#C9D1D9',
+            zIndex: 1000,
+            pointerEvents: 'none',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+            minWidth: '200px'
+          }}>
+            <div style={{ marginBottom: '6px', paddingBottom: '6px', borderBottom: '1px solid #30363D' }}>
+              <div style={{ fontWeight: '600', color: '#E5E7EB', marginBottom: '2px' }}>
+                {file.path.split('/').pop()}
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#8B949E' }}>Type:</span>
+                <span style={{ color: '#58A6FF' }}>{getFileType(file.extension)}</span>
+              </div>
+              {file.size && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8B949E' }}>Size:</span>
+                  <span>{formatFileSize(file.size)}</span>
+                </div>
+              )}
+              {file.extension && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8B949E' }}>Extension:</span>
+                  <span>.{file.extension}</span>
+                </div>
+              )}
+              <div style={{ marginTop: '4px', paddingTop: '6px', borderTop: '1px solid #30363D' }}>
+                <div style={{ color: '#6E7681', fontSize: '10px', wordBreak: 'break-all' }}>
+                  {file.path}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {isDirectory && isExpanded && file.children && (
         <div>
@@ -164,6 +258,8 @@ const formatFileSize = (bytes) => {
 }
 
 const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) => {
+  const [searchQuery, setSearchQuery] = useState('')
+
   // Organize files into a tree structure
   const organizeFiles = (fileList) => {
     const tree = {}
@@ -188,6 +284,16 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
     })
     
     return tree
+  }
+
+  // Filter files based on search query
+  const filterFiles = (fileList) => {
+    if (!searchQuery.trim()) return fileList
+    
+    const query = searchQuery.toLowerCase()
+    return fileList.filter(file =>
+      file.path.toLowerCase().includes(query)
+    )
   }
 
   const renderTree = (tree, level = 0) => {
@@ -226,16 +332,37 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
     )
   }
 
-  const tree = organizeFiles(files)
+  const filteredFiles = filterFiles(files)
+  const tree = organizeFiles(filteredFiles)
   const totalFiles = files.filter(f => f.type === 'file').length
+  const filteredCount = filteredFiles.filter(f => f.type === 'file').length
   const mentionedCount = mentionedFiles.length
+
+  const highlightMatch = (text) => {
+    if (!searchQuery.trim()) return text
+    
+    const query = searchQuery.toLowerCase()
+    const index = text.toLowerCase().indexOf(query)
+    
+    if (index === -1) return text
+    
+    return (
+      <>
+        {text.substring(0, index)}
+        <span style={{ background: '#FFA65780', color: '#FFA657', fontWeight: '600' }}>
+          {text.substring(index, index + searchQuery.length)}
+        </span>
+        {text.substring(index + searchQuery.length)}
+      </>
+    )
+  }
 
   return (
     <div className="sidebar">
       <div className="sidebar-title">
         <div>Explorer</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px', fontSize: '11px', color: '#6E7681', textTransform: 'none', letterSpacing: 'normal' }}>
-          <span>{totalFiles} files</span>
+          <span>{searchQuery ? `${filteredCount} / ` : ''}{totalFiles} files</span>
           {mentionedCount > 0 && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#58A6FF' }}>
               <span>✨</span>
@@ -244,8 +371,68 @@ const FileTree = ({ files, selectedFile, onFileSelect, mentionedFiles = [] }) =>
           )}
         </div>
       </div>
+      
+      {/* Search Input */}
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid #21262D' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search style={{
+            position: 'absolute',
+            left: '10px',
+            width: '14px',
+            height: '14px',
+            color: '#6E7681',
+            pointerEvents: 'none'
+          }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search files..."
+            style={{
+              width: '100%',
+              background: '#21262D',
+              border: '1px solid #30363D',
+              borderRadius: '6px',
+              padding: '6px 32px 6px 32px',
+              color: '#E5E7EB',
+              fontSize: '12px',
+              outline: 'none'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#58A6FF'}
+            onBlur={(e) => e.target.style.borderColor = '#30363D'}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#6E7681'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#E5E7EB'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6E7681'}
+            >
+              <X style={{ width: '14px', height: '14px' }} />
+            </button>
+          )}
+        </div>
+      </div>
+      
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {renderTree(tree)}
+        {filteredFiles.length === 0 && searchQuery ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '12px', color: '#6E7681' }}>No files found</p>
+            <p style={{ fontSize: '11px', color: '#6E7681', marginTop: '4px' }}>Try a different search term</p>
+          </div>
+        ) : (
+          renderTree(tree)
+        )}
       </div>
       
       {/* Legend */}

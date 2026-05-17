@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FileCode, AlertCircle, Loader2, Copy, Check, HelpCircle, X } from 'lucide-react'
 
-const API_BASE_URL = '/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
   const [copied, setCopied] = useState(false)
@@ -38,7 +38,7 @@ const CodeViewer = ({ selectedFile, fileContent, isLoading, repoPath }) => {
     setSelectedCode(codeToAnalyze)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/why`, {
+      const response = await fetch(`${API_BASE}/why`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

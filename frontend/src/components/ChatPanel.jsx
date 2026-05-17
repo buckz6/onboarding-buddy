@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Loader2, FileText, Coins } from 'lucide-react'
+import { Send, Bot, User, Loader2, FileText, Coins, Trash2 } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -126,11 +126,12 @@ const ChatMessage = ({ message, onFileClick, files }) => {
   )
 }
 
-const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) => {
+const ChatPanel = ({ messages, onSendMessage, onClearChat, repoPath, onFileClick, files }) => {
   const [inputValue, setInputValue] = useState('')
   const [isSending, setIsSending] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const messagesContainerRef = useRef(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -139,6 +140,12 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const handleClearChat = () => {
+    if (window.confirm('Are you sure you want to clear the chat history?')) {
+      onClearChat()
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -175,21 +182,54 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
     <div className="chat-panel">
       {/* Chat Header */}
       <div className="chat-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <Bot style={{ width: '20px', height: '20px', color: '#58A6FF' }} />
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: '12px', fontWeight: '600', color: '#C9D1D9' }}>AI Assistant</h2>
             <p style={{ fontSize: '11px', color: '#6E7681' }}>Powered by IBM Bob</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#0F1117', borderRadius: '3px', fontSize: '11px' }}>
-            <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
-            <span style={{ color: '#8B949E' }}>Bobcoins</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {messages.length > 0 && (
+              <button
+                onClick={handleClearChat}
+                style={{
+                  padding: '4px 8px',
+                  background: '#21262D',
+                  border: '1px solid #30363D',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  color: '#8B949E',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#F85149'
+                  e.currentTarget.style.borderColor = '#F85149'
+                  e.currentTarget.style.color = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#21262D'
+                  e.currentTarget.style.borderColor = '#30363D'
+                  e.currentTarget.style.color = '#8B949E'
+                }}
+                title="Clear chat history"
+              >
+                <Trash2 style={{ width: '12px', height: '12px' }} />
+                Clear
+              </button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#0F1117', borderRadius: '3px', fontSize: '11px' }}>
+              <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
+              <span style={{ color: '#8B949E' }}>Bobcoins</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="chat-messages" style={{ padding: 0 }}>
+      <div ref={messagesContainerRef} className="chat-messages" style={{ padding: 0 }}>
         {messages.length === 0 ? (
           <div className="empty-state" style={{ padding: '24px', textAlign: 'center' }}>
             <Bot style={{ width: '48px', height: '48px', opacity: 0.4 }} />
@@ -285,12 +325,17 @@ const ChatPanel = ({ messages, onSendMessage, repoPath, onFileClick, files }) =>
             <p style={{ fontSize: '11px', color: '#6E7681' }}>
               Press Enter to send, Shift+Enter for new line
             </p>
-            {inputValue && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6E7681' }}>
-                <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
-                <span>~{estimateCoins(inputValue)} coins</span>
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '11px', color: inputValue.length > 500 ? '#F59E0B' : '#6E7681' }}>
+                {inputValue.length} / 1000 chars
+              </span>
+              {inputValue && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6E7681' }}>
+                  <Coins style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
+                  <span>~{estimateCoins(inputValue)} coins</span>
+                </div>
+              )}
+            </div>
           </div>
         </form>
       </div>
