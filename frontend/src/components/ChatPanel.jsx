@@ -296,6 +296,48 @@ const ChatPanel = ({ messages, onSendMessage, onClearChat, repoPath, onFileClick
       {/* Input Area */}
       <div className="chat-input-row" style={{ background: '#0D1117' }}>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+          {/* Smart Quick Questions */}
+          {repoPath && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {[
+                "Where do I add a new feature?",
+                "How does authentication work?",
+                "What are the main entry points?"
+              ].map((question, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    setInputValue(question)
+                    handleSubmit({ preventDefault: () => {} })
+                  }}
+                  disabled={isSending}
+                  style={{
+                    padding: '4px 8px',
+                    background: '#21262D',
+                    border: '1px solid #30363D',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    color: '#8B949E',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#30363D'
+                    e.currentTarget.style.borderColor = '#58A6FF'
+                    e.currentTarget.style.color = '#58A6FF'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#21262D'
+                    e.currentTarget.style.borderColor = '#30363D'
+                    e.currentTarget.style.color = '#8B949E'
+                  }}
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '8px' }}>
             <textarea
               ref={inputRef}

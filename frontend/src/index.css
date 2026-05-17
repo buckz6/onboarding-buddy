@@ -206,3 +206,28 @@ body {
 .spinner {
   animation: spin 1s linear infinite;
 }
+
+/* Welcome Screen Styles */
+.welcome-container {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Quick Question Buttons */
+button[type="button"] {
+  transition: all 0.2s ease;
+}
+
+button[type="button"]:active {
+  transform: scale(0.98);
+}

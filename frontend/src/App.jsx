@@ -21,19 +21,26 @@ function App() {
   const [progress, setProgress] = useState(0)
   const [filesFound, setFilesFound] = useState(0)
 
+  const handleRepoLinkClick = (url) => {
+    setRepoUrl(url)
+    handleAnalyze(url)
+  }
+
   const validateGitHubUrl = (url) => {
     const githubPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/
     return githubPattern.test(url.trim())
   }
 
-  const handleAnalyze = async () => {
-    if (!repoUrl.trim()) {
+  const handleAnalyze = async (urlOverride = null) => {
+    const urlToAnalyze = urlOverride || repoUrl
+    
+    if (!urlToAnalyze.trim()) {
       setError('Please enter a GitHub repository URL')
       return
     }
 
     // Validate GitHub URL format
-    if (!validateGitHubUrl(repoUrl)) {
+    if (!validateGitHubUrl(urlToAnalyze)) {
       setError('Invalid GitHub URL format. Please use: https://github.com/username/repository')
       return
     }
@@ -63,7 +70,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ github_url: repoUrl }),
+        body: JSON.stringify({ github_url: urlToAnalyze }),
       })
 
       if (!response.ok) {
@@ -314,13 +321,131 @@ function App() {
           mentionedFiles={mentionedFiles}
         />
 
-        {/* Center Panel - Code Viewer */}
-        <CodeViewer
-          selectedFile={selectedFile}
-          fileContent={fileContent}
-          isLoading={isLoadingFile}
-          repoPath={repoPath}
-        />
+        {/* Center Panel - Code Viewer or Welcome Screen */}
+        {!repoPath && !isAnalyzing ? (
+          <div className="main-panel" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px'
+          }}>
+            <div className="welcome-container" style={{
+              textAlign: 'center',
+              maxWidth: '500px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}>
+              {/* Robot Icon */}
+              <div style={{ fontSize: '64px', lineHeight: 1 }}>🤖</div>
+              
+              {/* Heading */}
+              <div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#C9D1D9',
+                  marginBottom: '8px'
+                }}>
+                  Welcome to Onboarding Buddy
+                </h2>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#8B949E',
+                  marginBottom: '4px'
+                }}>
+                  Powered by IBM Bob
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <p style={{
+                  fontSize: '15px',
+                  color: '#8B949E',
+                  marginBottom: '8px'
+                }}>
+                  Understand any codebase instantly.
+                </p>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#6E7681'
+                }}>
+                  Paste a GitHub URL above to get started.
+                </p>
+              </div>
+
+              {/* Popular Repositories */}
+              <div style={{
+                marginTop: '16px',
+                padding: '20px',
+                background: '#161B22',
+                border: '1px solid #30363D',
+                borderRadius: '8px'
+              }}>
+                <p style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#8B949E',
+                  marginBottom: '12px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  Try these popular repositories:
+                </p>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  {[
+                    { url: 'https://github.com/tiangolo/fastapi', name: 'FastAPI - Modern Python web framework' },
+                    { url: 'https://github.com/expressjs/express', name: 'Express - Node.js web framework' },
+                    { url: 'https://github.com/laravel/laravel', name: 'Laravel - PHP web framework' }
+                  ].map((repo, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleRepoLinkClick(repo.url)}
+                      style={{
+                        padding: '10px 12px',
+                        background: '#0D1117',
+                        border: '1px solid #30363D',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        color: '#58A6FF',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#161B22'
+                        e.currentTarget.style.borderColor = '#58A6FF'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#0D1117'
+                        e.currentTarget.style.borderColor = '#30363D'
+                      }}
+                    >
+                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                        {repo.url.split('/').slice(-2).join('/')}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#8B949E' }}>
+                        {repo.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <CodeViewer
+            selectedFile={selectedFile}
+            fileContent={fileContent}
+            isLoading={isLoadingFile}
+            repoPath={repoPath}
+          />
+        )}
 
         {/* Right Sidebar - Chat Panel */}
         <ChatPanel
